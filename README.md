@@ -1,0 +1,4 @@
+Scrutiny
+========
+
+Software similarity scrutinizer
