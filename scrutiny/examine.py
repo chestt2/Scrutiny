@@ -35,24 +35,13 @@ from scrutiny.tokenize import tokenize
 from scrutiny.winnowing import Fingerprint
 from scrutiny.winnowing import winnowing
 from collections import namedtuple
+from scrutiny.util import normalizeFileLines
 Entry = namedtuple('Entry', 'hash sline scol eline ecol auth loc')
 
 def examine(filename, options):
     fingerprints  = list()
     
-    
-    #The below simply parses the document into a consistent form for editing
-    with open(filename, 'rb') as fin:
-        data = fin.read()
-    while data.count(b'\r'):
-        idx = data.index(b'\r')
-        data = data[:idx] + data[idx + 1:]
-    while data.startswith(b'\n'):
-        data = data[1:]
-    while data.endswith(b'\n\n'):
-        data = data[:-1]
-    if not data.endswith(b'\n'):
-        data += b'\n'
+    data = normalizeFileLines(filename)
     for fprint in winnowing(kgrams(tokenize(options.language, data, options.comments,
                                                                     options.endlines,
                                                                     options.whitespace,
@@ -90,7 +79,7 @@ def main(argv):
     if len(args) != 1:
         print("Expected one file")
     filename = args[0]
-    examine(filename, options)
+    print( len(examine(filename, options)) )
 
     
 if __name__ == '__main__':

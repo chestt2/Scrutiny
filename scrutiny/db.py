@@ -45,6 +45,7 @@ def getProperName(lang):
         name = "csharp"
     else:
         #Check to make sure their aren't other symbols present.
+        #TODO: if not all(map(str.isalnum, name))
         for char in name:
             if not char.isalnum():
                 print("Error: Lexer name must be alphanumeric and start", 
@@ -57,6 +58,7 @@ def getProperName(lang):
 def addToDB(master, path, lang):
 
 
+    #TODO: Don't use try/except for control flow.
     conn = sqlite3.connect(path)
     c = conn.cursor()
     name = getProperName(lang)

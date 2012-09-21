@@ -32,6 +32,7 @@ import os.path
 import sys
 from scrutiny.examine import Entry
 from scrutiny.examine import examine
+from scrutiny.util import createOrAppend
 
 def processFolder(path, merge, auth, options):
     
@@ -50,13 +51,9 @@ def processFolder(path, merge, auth, options):
         else:
             temp = examine(entry, options)
             for x in temp: #Add to dictionary.
-                if x.hash in merge:
-                    merge[x.hash].append(Entry(x.hash, x.sline, x.scol,
-                                            x.eline, x.ecol, auth, 
-                                            os.path.abspath(entry)))
-                else:
-                    merge[x.hash] = [ Entry(x.hash, x.sline, x.scol, x.eline,
-                                            x.ecol, auth, os.path.abspath(entry))]
+                entry = Entry(x.hash, x.sline, x.scol, x.eline,
+                              x.ecol, auth, os.path.abspath(entry))
+                createOrAppend(merge, x.hash, entry) 
 
     os.chdir(current)
                                         
@@ -86,7 +83,6 @@ def processBack(path, merge, options):
 def processBackAll(path, merge, options):
 
     """Process a folder of preveios submissions. 
-    
     Each folder contained should contain folders of students submissions. Each
     will be processed and their fingerprints added to merge, the dictionary
     passed in."""

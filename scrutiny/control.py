@@ -27,41 +27,28 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-from scrutiny.comparisons import runCompares
-from scrutiny.comparisons import buildMaster
-from scrutiny.tar_extract_all import extractAllTar
-from scrutiny.zip_extract_all import extractAllZip
-from scrutiny.tar_extract import processAssignmentTar
-from scrutiny.zip_extract import processAssignmentZip
-from scrutiny.db import addToDB
-from scrutiny.db import removePath
-from scrutiny.db import removeAuth
 import zipfile
 import tarfile
 import sys
 import os
+from scrutiny.comparisons import runCompares
+from scrutiny.comparisons import buildMaster
+from scrutiny.db import addToDB
+from scrutiny.db import removePath
+from scrutiny.db import removeAuth
+from scrutiny.extract import extractAll
 
 
 
 def justAssignments(options, args):
     gathered = []
-    if tarfile.is_tarfile(args[0]):
-        gathered = extractAllTar(args[0], options.path, options)
-    elif zipfile.is_zipfile(args[0]):
-        gathered = extractAllZip(args[0], options.path, options)
-    else:
-        print("Error: Bad ZIP or Tarfile.", file=sys.stderr)
-        sys.exit(os.EX_USAGE)
+
+    gathered = extractAll(args[0],options.path, options)
 
     master = buildMaster(gathered)
+    iprints = []
     if options.instructor:
-        if tarfile.is_tarfile(options.instructor):
-            iprints = processAssignmentTar(options.instructor, os.path.join(options.path, "Instructor_Code"), options)
-        elif zipfile.is_zipfile(options.instructor):
-            iprints = processAssignmentZip(options.instructor, os.path.join(options.path, "Instructor_Code"), options)
-        else:
-            print("Error: Bad Zip or Tar file for instructor code", file=sys.stderr)
-            sys.exit(os.EX_USAGE)
+        iprints = processAssignment(options.instructor, os.path.join(options.path, "Instructor_Code"), options)
             
         for item in iprints:
             if item in master:

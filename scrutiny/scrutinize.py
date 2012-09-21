@@ -38,6 +38,7 @@ from scrutiny.kgrams import kgrams
 from scrutiny.tokenize import tokenize
 from scrutiny.winnowing import Fingerprint
 from scrutiny.winnowing import winnowing
+from scrutiny.util import normalizeFileLines
 
 
 def scrutinize(filelist, options):
@@ -45,17 +46,7 @@ def scrutinize(filelist, options):
     documents = collections.defaultdict(list)
 
     for filename in filelist:
-        with open(filename, 'rb') as fin:
-            data = fin.read()
-        while data.count(b'\r'):
-            idx = data.index(b'\r')
-            data = data[:idx] + data[idx + 1:]
-        while data.startswith(b'\n'):
-            data = data[1:]
-        while data.endswith(b'\n\n'):
-            data = data[:-1]
-        if not data.endswith(b'\n'):
-            data += b'\n'
+        data = normalizeFileLines(filename)
         print(filename, file=sys.stderr)
         for fprint in winnowing(kgrams(tokenize(options.language, data, options.comments,
                                                                         options.endlines,

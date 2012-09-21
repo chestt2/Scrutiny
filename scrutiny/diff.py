@@ -28,27 +28,8 @@
 
 
 from operator import attrgetter
+from scrutiny.util import normalizeFileLines
 import os.path
-
-def cleanUp(filename):
-    """Cleans up a file removing unwanted attributes.
-    Removes '\r's and extra newline characters. Necessary so line numbers
-    match up with fingerprints when highlighting is being done.
-    """
-    
-    with open(filename, 'rb') as fin:
-        data = fin.read()
-    while data.count(b'\r'):
-        idx = data.index(b'\r')
-        data = data[:idx] + data[idx + 1:]
-    while data.startswith(b'\n'):
-        data = data[1:]
-    while data.endswith(b'\n\n'):
-        data = data[:-1]
-    if not data.endswith(b'\n'):
-        data += b'\n'
-    fin.close()
-    return data.decode()
 
 def overlap(a, b):
     """Returns true if two fignerprints overlap"""
@@ -63,6 +44,7 @@ def overlap(a, b):
 
 def highlightAssignment(fingerprints, output):
     """Highlights fingerprints and outputs into a table entry"""
+    print(fingerprints)
     
     
     index = 0
@@ -76,7 +58,7 @@ def highlightAssignment(fingerprints, output):
     while index < len(fingerprints):
         
         filename = fingerprints[index].loc
-        data = cleanUp(filename) #process the file.
+        data = normalizeFileLines(filename).decode() #process the file.
         output.write('<p>' + fingerprints[index].loc + ':</p>\n')
         line = 0
         col = 0

@@ -32,6 +32,7 @@ from scrutiny.db import getProperName
 from scrutiny.examine import Entry
 from scrutiny.back import processBack
 from scrutiny.back import processBackAll
+from scrutiny.util import createOrAppend
 
 def buildMaster(gathered):
     master = {}
@@ -39,11 +40,9 @@ def buildMaster(gathered):
     for assignment in gathered:
         data = assignment.values()
         for element in data:
+            #TODO: Map it?
             for entry in element:
-                if entry.hash in master:
-                    master[entry.hash].append(entry)
-                else:
-                    master[entry.hash] = [entry]
+                createOrAppend(master, entry.hash, entry)
 
     return master
     
@@ -56,6 +55,8 @@ def runCompares(gathered, master, iprints, options):
         fingerprints = 0
         keys = assignment.keys()
         #Calculate the total number of fingerprints for later statistics
+        #TODO: assignment.keys probably not necessary. Can we use a map?
+        #fingerprints = sum(map(len, assignment.values()))
         for key in keys:
             fingerprints += len(assignment[key])
             
@@ -84,6 +85,8 @@ def runCompares(gathered, master, iprints, options):
         authors = matches.keys()
         best = [ None, 0 ]
         #Look if any author has suspicious similarities.
+
+        #TODO: Make this more clear. Function?
         for author in authors: 
             if len(matches[author]) > (1/4) * fingerprints:
                 if len(matches[author]) > best[1]:
@@ -108,12 +111,9 @@ def runCompares(gathered, master, iprints, options):
             #Highlight the similarities.
             postProcess(intersect, matches[best[0]],len(keys), unique, options.path)
 
-		
 	
 def compareAll(assignment, master, matches):
     
-    
-
     #Calculates inersection between assignments.
    keys = assignment.keys()
 
@@ -125,10 +125,7 @@ def compareAll(assignment, master, matches):
        for entry in data:
            #If there is a match and its not by the same author, add it.
            if entry.auth != assignment[key][0].auth:               
-               if entry.auth in matches:
-                   matches[entry.auth].append(entry)
-               else:
-                   matches[entry.auth] = [entry]
+               createOrAppend(matches, entry.auth, entry)
 
        
 
@@ -152,12 +149,10 @@ def vsDB(assignment, matches, db_path, lang):
         tmp = c.fetchone()
         while tmp != None:
             #tmp[5] refers to the auth. Matches get inserted.
-            if tmp[5] in matches:
-                matches[tmp[5]].append(Entry(tmp[0], tmp[1], tmp[2],
-                                             tmp[3], tmp[4], tmp[5], tmp[6]))
-            else:
-                matches[tmp[5]] = [Entry(tmp[0], tmp[1], tmp[2], tmp[3],
-                                        tmp[4], tmp[5], tmp[6])]
+            entry = Entry(tmp[0], tmp[1], tmp[2],
+                          tmp[3], tmp[4], tmp[5], tmp[6])
+            createOrAppend( matches, tmp[5], entry)
+
             tmp = c.fetchone()
             
             
