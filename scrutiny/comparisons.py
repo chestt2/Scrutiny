@@ -52,13 +52,9 @@ def runCompares(gathered, master, iprints, options):
     for assignment in gathered:
         matches = {}
         
-        fingerprints = 0
         keys = assignment.keys()
         #Calculate the total number of fingerprints for later statistics
-        #TODO: assignment.keys probably not necessary. Can we use a map?
-        #fingerprints = sum(map(len, assignment.values()))
-        for key in keys:
-            fingerprints += len(assignment[key])
+        fingerprints = sum(map(len, assignment.values()))
             
         #Run a comparison of the file to the other assignments submitted.
         compareAll(assignment, master, matches)
