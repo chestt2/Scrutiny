@@ -58,21 +58,15 @@ def getProperName(lang):
 def addToDB(master, path, lang):
 
 
-    #TODO: Don't use try/except for control flow.
     conn = sqlite3.connect(path)
     c = conn.cursor()
     name = getProperName(lang)
-    create = str("create table " + name + " (hash integer, sline integer, " + 
+    create = str("create table if not exists " + name + " (hash integer, sline integer, " + 
      "scol integer, eline integer, ecol integer, auth text, path text)")
     
     insertString = "insert into " + name + " values (?,?,?,?,?,?,?)"
-    
-    try:
-        #Try to create the table.
-        c.execute(buildCreateString(name))
-    except:
-        #If the table already exists. Do nothing.
-        pass
+    c.execute(create)
+    conn.commit()
 
     keys = master.keys()
 
