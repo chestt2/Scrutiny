@@ -44,7 +44,6 @@ def overlap(a, b):
 
 def highlightAssignment(fingerprints, output):
     """Highlights fingerprints and outputs into a table entry"""
-    print(fingerprints)
     
     
     index = 0

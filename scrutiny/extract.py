@@ -1,13 +1,13 @@
+import multiprocessing
+import os
+import time
 import tarfile
 import zipfile
-import time
-import os
-import os.path
+
 from scrutiny.examine import Entry
 from scrutiny.examine import examine
 
 def extractFromArchive( filename, path ):
-    print(filename)
     if not os.path.isdir(path):
         os.mkdir(path)
     targets = None
@@ -31,6 +31,13 @@ def extractAll( archive, path, options):
     current = os.getcwd()
     os.chdir(path)
 
+#    def tupelize(filename):
+#        extentionless = os.path.splitext(filename)[0]
+#        return (filename, os.path.join(path, extentionless), options)
+#        #gathered.append(processAssignment(filename, os.path.join(path, extentionless), options))
+#    pool = multiprocessing.Pool(multiprocessing.cpu_count())
+#    gathered = pool.map( untup, map(tupelize, targets))
+
     for filename in targets:
         extentionless = os.path.splitext(filename)[0]
         gathered.append(processAssignment(filename, os.path.join(path, extentionless), options))
@@ -38,6 +45,9 @@ def extractAll( archive, path, options):
     os.chdir(current)
     return gathered
 
+def untup( val ):
+    filename, path, options = val
+    return processAssignment(filename, path, options)
 
 def processAssignment(archive, path, options):
     targets = extractFromArchive(archive,path)
