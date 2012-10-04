@@ -134,7 +134,7 @@ def vsDB(assignment, matches, db_path, lang):
     keys = assignment.keys()
     lang = getProperName(lang)
 
-    queryString = ('select * from ' + lang + ' where auth<>? and hash=?')
+    queryString = ('select hash, sline, scol, eline, ecol, auth, path from ' + lang + ' where auth<>? and hash=?')
 
 		
     for key in keys:
@@ -142,11 +142,10 @@ def vsDB(assignment, matches, db_path, lang):
         c.execute(queryString, t)
         
         #fetches one at a time due to memory concerns about scaling.
-        tmp = c.fetchone()
+        hsh, sline, scol, eline, ecol, auth, path = c.fetchone()
         while tmp != None:
             #tmp[5] refers to the auth. Matches get inserted.
-            entry = Entry(tmp[0], tmp[1], tmp[2],
-                          tmp[3], tmp[4], tmp[5], tmp[6])
+            entry = Entry(hsh, sline, scol, eline, ecol, auth, path)
             createOrAppend( matches, tmp[5], entry)
 
             tmp = c.fetchone()
