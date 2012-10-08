@@ -1,6 +1,5 @@
 import multiprocessing
 import os
-import time
 import tarfile
 import zipfile
 
@@ -13,7 +12,7 @@ def extractFromArchive( filename, path ):
     targets = None
 
     if tarfile.is_tarfile(filename):
-        tar = tarfile.open(tarball)
+        tar = tarfile.open(filename)
         tar.extractall(path)
         targets = tar.getnames()
     elif zipfile.is_zipfile(filename):
@@ -21,22 +20,15 @@ def extractFromArchive( filename, path ):
         zipped.extractall(path)
         targets = zipped.namelist()
     else:
-        print("Error: Unrecognized compression type", file=sys.std.err)
+        #print("Error: Unrecognized compression type", file=sys.std.err)
         sys.exit(os.EX_USAGE)
     return targets
 
 def extractAll( archive, path, options):
     targets = extractFromArchive(archive, path)
-    gathered=[]
+    gathered = []
     current = os.getcwd()
     os.chdir(path)
-
-#    def tupelize(filename):
-#        extentionless = os.path.splitext(filename)[0]
-#        return (filename, os.path.join(path, extentionless), options)
-#        #gathered.append(processAssignment(filename, os.path.join(path, extentionless), options))
-#    pool = multiprocessing.Pool(multiprocessing.cpu_count())
-#    gathered = pool.map( untup, map(tupelize, targets))
 
     for filename in targets:
         extentionless = os.path.splitext(filename)[0]
@@ -50,7 +42,7 @@ def untup( val ):
     return processAssignment(filename, path, options)
 
 def processAssignment(archive, path, options):
-    targets = extractFromArchive(archive,path)
+    targets = extractFromArchive(archive, path)
     author = os.path.split(path)[1]
     current = os.getcwd()
     os.chdir(path)
@@ -60,20 +52,18 @@ def processAssignment(archive, path, options):
             pass
         else:
             temp = examine(filename, options)
-            for x in temp:
-                if x.hash in master:
-                    master[x.hash].append(Entry(x.hash, x.sline, x.scol, x.eline,
-                             x.ecol, author, os.path.abspath(filename)))
+            for tup in temp:
+                entry = Entry(*tup, auth=author, loc=os.path.abspath(filename))
+                if tup.hash in master:
+                    master[tup.hash].append(entry)
                 else:
-                    master[x.hash] = [ Entry(x.hash, x.sline, x.scol, x.eline,
-                             x.ecol, author, os.path.abspath(filename)) ]
+                    master[tup.hash] = [ entry ]
                              
     os.chdir(current)
     return master
 
 
 def main(argv):
-    import sys
     from optparse import OptionParser
 
     parser = OptionParser()

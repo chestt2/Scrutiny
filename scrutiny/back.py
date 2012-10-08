@@ -34,7 +34,7 @@ from scrutiny.examine import Entry
 from scrutiny.examine import examine
 from scrutiny.util import createOrAppend
 
-def processFolder(path, merge, auth, options):
+def processFolder(path, merge, author, options):
     
     """Returns fingerprints of all files found in folder
     Runs recursively on all folders found there of. Adds all fingerprints to
@@ -47,13 +47,12 @@ def processFolder(path, merge, auth, options):
 
     for entry in targets:
         if os.path.isdir(entry): #If folder, recurse.
-            processFolder(entry, merge, auth, options)
+            processFolder(entry, merge, author, options)
         else:
             temp = examine(entry, options)
-            for x in temp: #Add to dictionary.
-                entry = Entry(x.hash, x.sline, x.scol, x.eline,
-                              x.ecol, auth, os.path.abspath(entry))
-                createOrAppend(merge, x.hash, entry) 
+            for tup in temp: #Add to dictionary.
+                entry = Entry(*tup, auth=author, path=os.path.abspath(entry))
+                createOrAppend(merge, tup.hash, entry) 
 
     os.chdir(current)
                                         
@@ -65,7 +64,7 @@ def processBack(path, merge, options):
     Adds all fingerprints it gets to the dictionary it is passed in."""
 
     if not os.path.isdir(path): #check for valid path
-        print("Error: Bad path to back assignment.", file=sys.stderr)
+        #print("Error: Bad path to back assignment.", file=sys.stderr)
         sys.exit(os.EX_USAGE)
     #path juggling
     current = os.getcwd()
@@ -88,13 +87,14 @@ def processBackAll(path, merge, options):
     passed in."""
 
     if not os.path.isdir(path): #Check for bath paths.
-        print("Error: Bad path to back assignments.", file=sys.stderr)
+        #print("Error: Bad path to back assignments.", file=sys.stderr)
         sys.exit(os.EX_USAGE)
 
     current = os.getcwd()
     os.chdir(path)
 
     targets = os.listdir(path)
-    for backAssign in targets:
-        processBack(os.path.join(path, backAssign), merge, options)
+    for back_assign in targets:
+        processBack(os.path.join(path, back_assign), merge, options)
+    os.chdir(current)
 

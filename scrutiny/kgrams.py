@@ -79,7 +79,6 @@ def kgrams(token_generator, length):
 
 def main(argv):
     import os
-    import sys
     from optparse import OptionParser
 
     parser = OptionParser()
@@ -91,14 +90,15 @@ def main(argv):
                       help="consider comments when tokenizing")
     parser.add_option("-e", action="store_true", dest="endlines", default=False,
                       help="consider endlines when tokenizing")
-    parser.add_option("-w", action="store_true", dest="whitespace", default=False,
+    parser.add_option("-w", action="store_true", dest="whitespace",
+                      default=False,
                       help="consider whitespace when tokenizing")
     parser.add_option("-t", action="store_true", dest="text", default=False,
                       help="consider text when tokenizing")
     (options, args) = parser.parse_args(argv)
 
     if len(args) != 1:
-        print("Please specify exactly one input file.", file=sys.stderr)
+        #print("Please specify exactly one input file.", file=sys.stderr)
         sys.exit(os.EX_USAGE)
 
     with open(args[0], 'rb') as fin:

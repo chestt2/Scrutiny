@@ -27,9 +27,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-import collections
 import sys
-import os
 from scrutiny.kgrams import kgrams
 from scrutiny.tokenize import tokenize
 from scrutiny.winnowing import Fingerprint
@@ -42,13 +40,15 @@ def examine(filename, options):
     fingerprints  = list()
     
     data = normalizeFileLines(filename)
-    for fprint in winnowing(kgrams(tokenize(options.language, data, options.comments,
-                                                                    options.endlines,
-                                                                    options.whitespace,
-                                                                    options.text),
-                                int(options.size)),
-                            int(options.window)):
-     fingerprints.append( fprint) #Add all the fingerprints to a list and return it.
+    for fprint in winnowing(kgrams(tokenize(options.language, data,
+                                                  options.comments,
+                                                  options.endlines,
+                                                  options.whitespace,
+                                                  options.text),
+                                                  int(options.size)),
+                                                  int(options.window)):
+        # Add all the fingerprints to a list and return it.
+        fingerprints.append( fprint) 
     return fingerprints        
 
 
@@ -56,7 +56,6 @@ def examine(filename, options):
 
 
 def main(argv):
-    import sys
     from optparse import OptionParser
 
     parser = OptionParser()
@@ -68,7 +67,8 @@ def main(argv):
                       help="consider comments when tokenizing")
     parser.add_option("-e", action="store_true", dest="endlines", default=False,
                       help="consider endlines when tokenizing")
-    parser.add_option("-w", action="store_true", dest="whitespace", default=False,
+    parser.add_option("-w", action="store_true", dest="whitespace",
+                      default=False,
                       help="consider whitespace when tokenizing")
     parser.add_option("-W", "--window", dest="window", default=5,
                       help="size of the winnowing window", metavar="W")
@@ -83,7 +83,6 @@ def main(argv):
 
     
 if __name__ == '__main__':
-    import sys
     main(sys.argv[1:])
        
 

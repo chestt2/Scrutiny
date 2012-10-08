@@ -61,7 +61,6 @@ def winnowing(kgram_generator, length):
 
 def main(argv):
     import os
-    import sys
     from optparse import OptionParser
 
     parser = OptionParser()
@@ -73,7 +72,8 @@ def main(argv):
                       help="consider comments when tokenizing")
     parser.add_option("-e", action="store_true", dest="endlines", default=False,
                       help="consider endlines when tokenizing")
-    parser.add_option("-w", action="store_true", dest="whitespace", default=False,
+    parser.add_option("-w", action="store_true", dest="whitespace",
+                      default=False,
                       help="consider whitespace when tokenizing")
     parser.add_option("-W", "--window", dest="window", default=5,
                       help="size of the winnowing window", metavar="W")
@@ -82,15 +82,16 @@ def main(argv):
     (options, args) = parser.parse_args(argv)
 
     if len(args) != 1:
-        print("Please specify exactly one input file.", file=sys.stderr)
+#        print("Please specify exactly one input file.", file=sys.stderr)
         sys.exit(os.EX_USAGE)
 
     with open(args[0], 'rb') as fin:
         data = fin.read()
-    for fprint in winnowing(kgrams(tokenize(options.language, data, options.comments,
-                                                                    options.endlines,
-                                                                    options.whitespace,
-                                                                    options.text),
+    for fprint in winnowing(kgrams(tokenize(options.language, data,
+                                                             options.comments,
+                                                             options.endlines,
+                                                             options.whitespace,
+                                                             options.text),
                                 int(options.size)),
                             int(options.window)):
         print(fprint)

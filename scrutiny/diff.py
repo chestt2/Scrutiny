@@ -31,13 +31,13 @@ from operator import attrgetter
 from scrutiny.util import normalizeFileLines
 import os.path
 
-def overlap(a, b):
+def overlap(alpha, beta):
     """Returns true if two fignerprints overlap"""
-    if a.eline < b.sline:
+    if alpha.eline < beta.sline:
         return False
-    elif a.eline > b.sline:
+    elif alpha.eline > beta.sline:
         return True
-    if a.ecol >= b.scol:
+    if alpha.ecol >= beta.scol:
         return True
     else:
         return False        
@@ -83,7 +83,8 @@ def highlightAssignment(fingerprints, output):
                     pass
                 else:
                     output.write(endHighlight)
-            if(index < len(fingerprints) and (fingerprints[index].sline - line < 5 or
+            if(index < len(fingerprints) and
+                (fingerprints[index].sline - line < 5 or
                 (index > 0 and line - fingerprints[index-1].eline < 5))):
                 if letter == '<':
                     output.write("&lt;")
@@ -118,10 +119,12 @@ def postProcess(assignment, matches, acount, mcount, PATH):
     output = open(os.path.join(PATH, saveas), 'w')
 
     output.write('<html>\n<body>\n')
-    output.write('<p> Significant similarities were found between author ' + assignment[0].auth + 'and author '
-                                                                          + matches[0].auth + '</p>')
-    output.write('<p> Out of ' + assignment[0].auth + '\'s unique ' + str(acount) + ' fingerprints, ' 
-                  + str(mcount) + ' were found in ' + matches[0].auth + ' (' + str(percent) + '%) </p>')   
+    output.write('<p> Significant similarities were found between author ' +\
+                  assignment[0].auth + 'and author '+ matches[0].auth + '</p>')
+    output.write('<p> Out of ' + assignment[0].auth + '\'s unique ' +\
+                  str(acount) + ' fingerprints, ' + str(mcount) +\
+                  ' were found in ' + matches[0].auth +\
+                  ' (' + str(percent) + '%) </p>')   
     output.write('<table width="100%">\n<tr valign="top">\n')
     highlightAssignment(assignment, output)
     highlightAssignment(matches, output)

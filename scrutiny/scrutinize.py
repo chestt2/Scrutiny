@@ -47,13 +47,14 @@ def scrutinize(filelist, options):
 
     for filename in filelist:
         data = normalizeFileLines(filename)
-        print(filename, file=sys.stderr)
-        for fprint in winnowing(kgrams(tokenize(options.language, data, options.comments,
-                                                                        options.endlines,
-                                                                        options.whitespace,
-                                                                        options.text),
+        #print(filename, file=sys.stderr)
+        for fprint in winnowing(kgrams(tokenize(options.language, data,
+                                                      options.comments,
+                                                      options.endlines,
+                                                      options.whitespace,
+                                                      options.text),
                                     int(options.size)),
-                                int(options.window)):
+                                    int(options.window)):
             documents[filename].append(fprint)
             fingerprints[fprint.hash].append(filename)
     for document, fprints in documents.items():
@@ -72,8 +73,6 @@ def scrutinize(filelist, options):
 
 
 def main(argv):
-    import os
-    import sys
     from optparse import OptionParser
 
     parser = OptionParser()
@@ -85,7 +84,8 @@ def main(argv):
                       help="consider comments when tokenizing")
     parser.add_option("-e", action="store_true", dest="endlines", default=False,
                       help="consider endlines when tokenizing")
-    parser.add_option("-w", action="store_true", dest="whitespace", default=False,
+    parser.add_option("-w", action="store_true", dest="whitespace",
+                      default=False,
                       help="consider whitespace when tokenizing")
     parser.add_option("-W", "--window", dest="window", default=5,
                       help="size of the winnowing window", metavar="W")
@@ -96,5 +96,4 @@ def main(argv):
 
 
 if __name__ == '__main__':
-    import sys
     main(sys.argv[1:])

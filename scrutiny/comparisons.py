@@ -28,7 +28,7 @@
 
 
 from scrutiny.diff import postProcess
-from scrutiny.db import getProperName
+from scrutiny.db import getTableNames
 from scrutiny.examine import Entry
 from scrutiny.back import processBack
 from scrutiny.back import processBackAll
@@ -38,9 +38,7 @@ def buildMaster(gathered):
     master = {}
     #Put all the fingerprints into a single dictionary
     for assignment in gathered:
-        data = assignment.values()
-        for element in data:
-            #TODO: Map it?
+        for element in assignment.values():
             for entry in element:
                 createOrAppend(master, entry.hash, entry)
 
@@ -52,7 +50,6 @@ def runCompares(gathered, master, iprints, options):
     for assignment in gathered:
         matches = {}
         
-        keys = assignment.keys()
         #Calculate the total number of fingerprints for later statistics
         fingerprints = sum(map(len, assignment.values()))
             
@@ -76,79 +73,78 @@ def runCompares(gathered, master, iprints, options):
                     old.pop(item)
             compareAll(assignment, old, matches)
 
-
-        
-        authors = matches.keys()
         best = [ None, 0 ]
         #Look if any author has suspicious similarities.
 
         #TODO: Make this more clear. Function?
-        for author in authors: 
+        for author in matches.keys(): 
             if len(matches[author]) > (1/4) * fingerprints:
                 if len(matches[author]) > best[1]:
                     best[0], best[1] = author, len(matches[author])
 
         if best[0]: #If there are similarities.
             intersect = []
-            oldHash = None 
+            old_hash = None 
             #Get the fingerprints in assignment that it shares with the match
             unique = 0
-            old = None
-            for x in matches[best[0]]:
-                if x.hash != old:
-                    unique += 1
-                    old = x.hash
+#            old = None
+#            for x in matches[best[0]]:
+#                if x.hash != old:
+#                    unique += 1
+#                    old = x.hash
+            unique = len(set([x.hash for x in matches[best[0]]]))
             for element in matches[best[0]]:
-                if element.hash != oldHash:
-                    oldHash = element.hash
+                if element.hash != old_hash:
+                    old_hash = element.hash
                     row = assignment[element.hash]
                     for item in row:
                         intersect.append(item)
             #Highlight the similarities.
-            postProcess(intersect, matches[best[0]],len(keys), unique, options.path)
+            postProcess(intersect, matches[best[0]], len(assignment.keys()), 
+                        unique, options.path)
 
 	
 def compareAll(assignment, master, matches):
     
     #Calculates inersection between assignments.
-   keys = assignment.keys()
 
-   for key in keys:
-       if key not in master:
-           continue
-       data = master[key]
-       #Check for fingerprints with same hash in the master.
-       for entry in data:
-           #If there is a match and its not by the same author, add it.
-           if entry.auth != assignment[key][0].auth:               
-               createOrAppend(matches, entry.auth, entry)
+    for key in assignment.keys():
+        if key not in master:
+            continue
+        data = master[key]
+        #Check for fingerprints with same hash in the master.
+        for entry in data:
+        #If there is a match and its not by the same author, add it.
+            if entry.auth != assignment[key][0].auth:               
+                createOrAppend(matches, entry.auth, entry)
 
        
 
 def vsDB(assignment, matches, db_path, lang):
 
-
     import sqlite3
     conn = sqlite3.connect(db_path)
-    c = conn.cursor()
-    keys = assignment.keys()
-    lang = getProperName(lang)
+    cur = conn.cursor()
+    lang, auth = getTableNames(lang)
 
-    queryString = ('select hash, sline, scol, eline, ecol, auth, path from ' + lang + ' where auth<>? and hash=?')
+    query_string = 'select hash, sline, scol, eline, ecol, auth, path'
+    query_string += 'from ' + lang + ', ' + auth + ' where auth<>? and '
+    query_string += 'hash=? and ' + lang + '.fileid=' + auth + '.rowid'
+#    queryString = 'select hash, sline, scol, eline, ecol, auth, path from ' + lang + ' where auth<>? and hash=?'
 
 		
-    for key in keys:
-        t = (assignment[key][0].auth, key)
-        c.execute(queryString, t)
+    for key in assignment.keys():
+        target = (assignment[key][0].auth, key)
+        for row in cur.execute(query_string, target):
+            createOrAppend( matches, row['auth'], Entry(*row))
         
-        #fetches one at a time due to memory concerns about scaling.
-        hsh, sline, scol, eline, ecol, auth, path = c.fetchone()
-        while tmp != None:
+#        #fetches one at a time due to memory concerns about scaling.
+#        hsh, sline, scol, eline, ecol, auth, path = c.fetchone()
+#        while tmp != None:
             #tmp[5] refers to the auth. Matches get inserted.
-            entry = Entry(hsh, sline, scol, eline, ecol, auth, path)
-            createOrAppend( matches, tmp[5], entry)
-
-            tmp = c.fetchone()
+#            entry = Entry(hsh, sline, scol, eline, ecol, auth, path)
+#            createOrAppend( matches, tmp[5], entry)
+#
+#            tmp = c.fetchone()
             
             
-

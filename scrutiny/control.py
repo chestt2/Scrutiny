@@ -43,7 +43,7 @@ from scrutiny.extract import extractAll
 def justAssignments(options, args):
     gathered = []
 
-    gathered = extractAll(args[0],options.path, options)
+    gathered = extractAll(args[0], options.path, options)
 
     master = buildMaster(gathered)
     iprints = []
@@ -111,12 +111,11 @@ def main(argv):
         sys.exit()
              
     if len(args) != 1:
-        print("Please specify exactly one input file.", file=sys.stderr)
+        #print("Please specify exactly one input file.", file=sys.stderr)
         sys.exit(os.EX_USAGE)
             
     justAssignments(options, args)
 
 if __name__ == '__main__':
-    import sys
     main(sys.argv[1:])
 
