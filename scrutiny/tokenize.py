@@ -85,19 +85,10 @@ def tokenize(lang, data, comments=False, endlines=True, whitespace=False, text=T
 def main(argv):
     import os
     from optparse import OptionParser
+    from scrutiny.util import add_common_options
 
     parser = OptionParser()
-    parser.add_option("-l", "--language", dest="language", default="c",
-                      help="tokenize using lexer for language", metavar="LANG")
-    parser.add_option("-c", action="store_true", dest="comments", default=False,
-                      help="consider comments when tokenizing")
-    parser.add_option("-e", action="store_true", dest="endlines", default=False,
-                      help="consider endlines when tokenizing")
-    parser.add_option("-w", action="store_true", dest="whitespace",
-                      default=False,
-                      help="consider whitespace (not endlines) when tokenizing")
-    parser.add_option("-t", action="store_true", dest="text", default=False,
-                      help="consider text when tokenizing")
+    add_common_options(parser)
     (options, args) = parser.parse_args(argv)
 
     if len(args) != 1:

@@ -86,12 +86,6 @@ def runCompares(gathered, master, iprints, options):
             intersect = []
             old_hash = None 
             #Get the fingerprints in assignment that it shares with the match
-            unique = 0
-#            old = None
-#            for x in matches[best[0]]:
-#                if x.hash != old:
-#                    unique += 1
-#                    old = x.hash
             unique = len(set([x.hash for x in matches[best[0]]]))
             for element in matches[best[0]]:
                 if element.hash != old_hash:
@@ -123,28 +117,17 @@ def compareAll(assignment, master, matches):
 def vsDB(assignment, matches, db_path, lang):
 
     import sqlite3
-    conn = sqlite3.connect(db_path)
-    cur = conn.cursor()
     lang, auth = getTableNames(lang)
 
     query_string = 'select hash, sline, scol, eline, ecol, auth, path'
     query_string += 'from ' + lang + ', ' + auth + ' where auth<>? and '
     query_string += 'hash=? and ' + lang + '.fileid=' + auth + '.rowid'
-#    queryString = 'select hash, sline, scol, eline, ecol, auth, path from ' + lang + ' where auth<>? and hash=?'
 
 		
-    for key in assignment.keys():
-        target = (assignment[key][0].auth, key)
-        for row in cur.execute(query_string, target):
-            createOrAppend( matches, row['auth'], Entry(*row))
+    with sqlite3.connect(db_path) as conn:
+        for key in assignment.keys():
+            target = (assignment[key][0].auth, key)
+            for row in conn.execute(query_string, target):
+                createOrAppend( matches, row['auth'], Entry(*row))
         
-#        #fetches one at a time due to memory concerns about scaling.
-#        hsh, sline, scol, eline, ecol, auth, path = c.fetchone()
-#        while tmp != None:
-            #tmp[5] refers to the auth. Matches get inserted.
-#            entry = Entry(hsh, sline, scol, eline, ecol, auth, path)
-#            createOrAppend( matches, tmp[5], entry)
-#
-#            tmp = c.fetchone()
-            
             

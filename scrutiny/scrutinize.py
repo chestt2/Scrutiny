@@ -74,23 +74,14 @@ def scrutinize(filelist, options):
 
 def main(argv):
     from optparse import OptionParser
+    from scrutiny.util import add_common_options
 
     parser = OptionParser()
-    parser.add_option("-l", "--language", dest="language", default="c",
-                      help="tokenize using lexer for language", metavar="LANG")
+    add_common_options(parser)
     parser.add_option("-s", "--size", dest="size", default=5,
                       help="size of each kgram", metavar="N")
-    parser.add_option("-c", action="store_true", dest="comments", default=False,
-                      help="consider comments when tokenizing")
-    parser.add_option("-e", action="store_true", dest="endlines", default=False,
-                      help="consider endlines when tokenizing")
-    parser.add_option("-w", action="store_true", dest="whitespace",
-                      default=False,
-                      help="consider whitespace when tokenizing")
     parser.add_option("-W", "--window", dest="window", default=5,
                       help="size of the winnowing window", metavar="W")
-    parser.add_option("-t", action="store_true", dest="text", default=False,
-                      help="consider text when tokenizing")
     (options, args) = parser.parse_args(argv)
     scrutinize(args, options)
 
