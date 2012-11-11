@@ -44,9 +44,6 @@ def getProperName(lang):
     elif name == "C#":
         name = "csharp"
     elif not all(map(str.isalnum, name)):
-        #Check to make sure their aren't other symbols present.
-#       print("Error: Lexer name must be alphanumeric and start with a letter.",
-#                file=sys.stderr)
         sys.exit(1)
     #return the proper name.
     return name
@@ -103,37 +100,31 @@ def addToDB(master, path, lang):
     conn.commit()
     cur.close()
 
-def regexp(expr, item):
-    '''Utility function allowing for regex in sqlite3'''
-    reg = re.compile(expr)
-    return reg.search(item) is not None
-
-def delete_after_select(conn, select, delete, target, ent_table):
+def delete_after_select(dbpath, select, delete, target, ent_table):
     '''Deletes entries from both the entry and author tables'''
     
-    delete_ent = 'delete from ' + ent_table + ' where fileid=?'
-    targets = conn.execute(select, (target)).fetchall()
-    conn.execute(delete, (target))
-    for fileid in targets:
-        conn.execute(delete_ent, (fileid[0]))
+    with sqlite3.connect(dbpath) as conn:
+        delete_ent = 'delete from ' + ent_table + ' where fileid=?'
+        targets = conn.execute(select, (target)).fetchall()
+        conn.execute(delete, (target))
+        for fileid in targets:
+            conn.execute(delete_ent, (fileid[0]))
     
 
 def removePath(lang, dbpath, tgtpath):
     ent_table, auth_table = getTableNames(lang)
 
-    select = 'select rowid from ' + auth_table + ' where path REGEXP ?'
-    delete = 'delete rowid from ' + auth_table + ' where path REGEXP ?'
-    
-    with sqlite3.connect(dbpath) as conn:
-        conn.create_function("REGEXP", 2, regexp)
-        delete_after_select(conn, select, delete, tgtpath, ent_table)
+    suffix = auth_table + ' where path like \'%' + tgtpath + '%\''
+    select = 'select rowid from ' + suffix
+    delete = 'delete rowid from ' + suffix
+    delete_after_select(dbpath, select, delete, tgtpath, ent_table)
 
     
 def removeAuth(lang, dbpath, auth):
     ent_table, auth_table = getTableNames(lang)
 
-    select = 'select rowid from ' + auth_table + ' where auth=?'
-    delete = 'delete from ' + auth_table + ' where auth=?'
-    with sqlite3.connect(dbpath) as conn:
-        delete_after_select(conn, select, delete, auth, ent_table)
+    suffix = ' from ' + auth_table + ' where auth=?'
+    select = 'select rowid' + suffix 
+    delete = 'delete' + suffix 
+    delete_after_select(dbpath, select, delete, auth, ent_table)
 
