@@ -36,14 +36,15 @@ from pygments.lexers import get_lexer_by_name
 def getProperName(lang):
     
     lexer = get_lexer_by_name(lang)
-    name = lexer.name
+    name = lexer.name.lower()
     
     #sqlite table names cannot contain symbols, so adjust.
-    if name == "C++":
-        name = "cpp"
-    elif name == "C#":
-        name = "csharp"
-    elif not all(map(str.isalnum, name)):
+    name = name.replace('+', 'plus')
+    name = name.replace('#', 'sharp')
+    name = name.replace('-', 'dash')
+    name = name.replace('@', 'at')
+    name = name.replace('.', 'dot')
+    if not all(map(str.isalnum, name)):
         sys.exit(1)
     #return the proper name.
     return name
@@ -101,7 +102,7 @@ def addToDB(master, path, lang):
     cur.close()
 
 def delete_after_select(dbpath, select, delete, target, ent_table):
-    '''Deletes entries from both the entry and author tables'''
+    """Deletes entries from both the entry and author tables"""
     
     with sqlite3.connect(dbpath) as conn:
         delete_ent = 'delete from ' + ent_table + ' where fileid=?'
@@ -111,7 +112,8 @@ def delete_after_select(dbpath, select, delete, target, ent_table):
             conn.execute(delete_ent, (fileid[0]))
     
 
-def removePath(lang, dbpath, tgtpath):
+def remove_path(lang, dbpath, tgtpath):
+    """Removes all entries whose path matches *tgtpath*"""
     ent_table, auth_table = getTableNames(lang)
 
     suffix = auth_table + ' where path like \'%' + tgtpath + '%\''
@@ -120,11 +122,33 @@ def removePath(lang, dbpath, tgtpath):
     delete_after_select(dbpath, select, delete, tgtpath, ent_table)
 
     
-def removeAuth(lang, dbpath, auth):
+def remove_auth(lang, dbpath, auth):
+    """Removes all of auth's entries in the database"""
     ent_table, auth_table = getTableNames(lang)
 
     suffix = ' from ' + auth_table + ' where auth=?'
     select = 'select rowid' + suffix 
     delete = 'delete' + suffix 
     delete_after_select(dbpath, select, delete, auth, ent_table)
+
+def main(argv):
+    """Main function dealing with all user interactions with database"""
+
+    from optparse import OptionParser
+    parser = OptionParser()
+    parser.add_option("-l", "--language", dest="language", default="c",
+                      help="tokenize using lexer for language", metavar="LANG")
+    parser.add_option("--delete-path", dest="delpath", default=False,
+                      help='delete entries that match the regex \'*path*\'')
+    parser.add_option("--delete-auth", dest="delauth", default=False,
+                      help='delete any of a specific authors entires')
+    options, args = parser.parse_args(argv)
+
+    if options['delauth'] is not False:
+        remove_auth(options['language'], args[0], options['delauth'])
+    if options['delpath'] is not False:
+        remove_path(options['language'], args[0], options['delauth'])
+
+if __name__ == "__main__":
+    main(sys.argv[1:])
 
