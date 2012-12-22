@@ -85,23 +85,10 @@ def main(argv):
     parser.add_option("-b", dest="back", default=False,
                        help="run against folder of back asssignments.")
     parser.add_option("-B", dest="backall", default=False,
-                       help="run against folder of folders of back assignments.")
-    parser.add_option("-S", action="store_true", dest="skip", default=False,
-                       help="skip all comparisons")
-    parser.add_option("--DP", dest="delpath", default=False,
-                       help='delete entries in database whose path is below given')
-    parser.add_option("--DA", dest="delauth", default=False,
-                       help='delete entries in database by given author')
+                       help="run against folder of folders of back assignments")
 
     (options, args) = parser.parse_args(argv)
 
-    if(options.skip and (options.delpath or options.delauth)):
-        if options.delpath:
-            removePath(options.language, options.db, options.delpath)
-        if options.delauth:
-            removeAuth(options.language, options.db, options.delauth)
-        sys.exit()
-             
     if len(args) != 1:
         #print("Please specify exactly one input file.", file=sys.stderr)
         sys.exit(os.EX_USAGE)
