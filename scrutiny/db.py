@@ -112,7 +112,7 @@ def delete_after_select(dbpath, select, delete, target, ent_table):
             conn.execute(delete_ent, (fileid[0]))
     
 
-def remove_path(lang, dbpath, tgtpath):
+def removePath(lang, dbpath, tgtpath):
     """Removes all entries whose path matches *tgtpath*"""
     ent_table, auth_table = getTableNames(lang)
 
@@ -122,7 +122,7 @@ def remove_path(lang, dbpath, tgtpath):
     delete_after_select(dbpath, select, delete, tgtpath, ent_table)
 
     
-def remove_auth(lang, dbpath, auth):
+def removeAuth(lang, dbpath, auth):
     """Removes all of auth's entries in the database"""
     ent_table, auth_table = getTableNames(lang)
 
